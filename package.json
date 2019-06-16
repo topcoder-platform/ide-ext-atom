@@ -1,0 +1,27 @@
+{
+  "name": "topcoder-workflow",
+  "main": "./lib/topcoder-workflow",
+  "version": "0.0.1",
+  "description": "This package is meant to closely integrate the Topcoder platform with Atom text editor, to allow the user to perform actions from within the editor, without having to open a browser.",
+  "author": "",
+  "keywords": [
+    "topcoder"
+  ],
+  "dependencies": {
+    "chai": "^4.1.2",
+    "config": "^1.26.2",
+    "jwt-decode": "^2.2.0",
+    "lodash": "^4.17.4",
+    "mocha": "^4.0.0",
+    "moment": "^2.18.1",
+    "request": "^2.83.0",
+    "request-promise": "^4.2.2",
+    "supertest": "^3.0.0",
+    "topcoder-api-challenges": "^1.0.5",
+    "topcoder-api-projects": "^1.0.1",
+    "winston": "^2.4.0"
+  },
+  "engines": {
+    "atom": ">=1.0.0 <2.0.0"
+  }
+}

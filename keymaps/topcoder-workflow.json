@@ -1,0 +1,7 @@
+{
+    "atom-workspace": {
+        "ctrl-shift-h": "topcoder:toggle",
+        "ctrl-shift-t": "topcoder:login",
+        "ctrl-shift-i": "topcoder:load"
+    }
+}

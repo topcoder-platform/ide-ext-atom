@@ -1,0 +1,26 @@
+{
+    "menu": [
+        {
+            "label": "Packages",
+            "submenu": [
+                {
+                    "label": "Topcoder",
+                    "submenu": [
+                        {
+                            "label": "Show/Hide",
+                            "command": "topcoder:toggle"
+                        },
+                        {
+                            "label": "Login",
+                            "command": "topcoder:login"
+                        },
+                        {
+                            "label": "Load",
+                            "command": "topcoder:load"
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}
