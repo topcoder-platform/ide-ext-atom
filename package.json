@@ -8,15 +8,11 @@
     "topcoder"
   ],
   "dependencies": {
-    "chai": "^4.1.2",
     "config": "^1.26.2",
     "jwt-decode": "^2.2.0",
     "lodash": "^4.17.4",
-    "mocha": "^4.0.0",
-    "moment": "^2.18.1",
     "request": "^2.83.0",
     "request-promise": "^4.2.2",
-    "supertest": "^3.0.0",
     "topcoder-api-challenges": "^1.0.5",
     "topcoder-api-projects": "^1.0.1",
     "winston": "^2.4.0"
