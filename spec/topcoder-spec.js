@@ -1,89 +1,129 @@
 'use babel';
 
-import TopcoderWorkflow from '../lib/topcoder-workflow';
+const _ = require('lodash');
+const config = require('../config');
+const testConfig = require('../config/test');
+const fs = require('fs');
+const path = require('path');
 
-
-describe('TopcoderWorkflow', () => {
-    let workspaceElement, activationPromise;
+describe('TopcoderWorkflow E2E tests', () => {
+    let workspaceElement;
 
     beforeEach(() => {
         workspaceElement = atom.views.getView(atom.workspace);
-        activationPromise = atom.packages.activatePackage('topcoder-workflow');
+        atom.packages.activatePackage('topcoder-workflow');
+        atom.config.set(`${config.EXT_NAME}.username`, testConfig.USERNAME);
+        atom.config.set(`${config.EXT_NAME}.password`, testConfig.PASSWORD);
     });
 
-    describe('when the topcoder:toggle event is triggered', () => {
-        it('hides and shows the modal panel', () => {
+    // test login menu(ctrl-shift-t) without username
+    it('begin to login without username', () => {
+        atom.config.set(`${config.EXT_NAME}.username`, '');
+        atom.commands.dispatch(workspaceElement, 'topcoder:login');
 
-            atom.commands.dispatch(workspaceElement, 'topcoder:toggle');
+        waitsFor(() => {
+            if (atom.notifications.getNotifications().length > 0) {
+                return _.last(atom.notifications.getNotifications()).getMessage() === config.WARN_MESSAGES.MISSING_USERNAME;
+            }
+        }, 'Timeout issue in testing login', testConfig.TIMEOUT);
 
-            waitsForPromise(() => {
-                return activationPromise;
-            });
-
-            runs(() => {
-
-                let topcoderElement = workspaceElement.querySelector('.topcoder-workflow');
-                expect(topcoderElement).toExist();
-
-                let topcoderPanel = atom.workspace.panelForItem(topcoderElement);
-                expect(topcoderPanel.isVisible()).toBe(true);
-                atom.commands.dispatch(workspaceElement, 'topcoder:toggle');
-                expect(topcoderPanel.isVisible()).toBe(false);
-            });
+        runs(() => {
+            const t = localStorage.getItem("atom_topcoder_token");
+            expect(t).toBe(null);
         });
+    });
 
-        // test shou/hide menu(ctrl-shift-h)
-        it('hides and shows the view', () => {
+    // test login menu(ctrl-shift-t) without username
+    it('begin to login without password', () => {
+        atom.config.set(`${config.EXT_NAME}.password`, '');
+        atom.commands.dispatch(workspaceElement, 'topcoder:login');
 
-            jasmine.attachToDOM(workspaceElement);
+        waitsFor(() => {
+            if (atom.notifications.getNotifications().length > 0) {
+                return _.last(atom.notifications.getNotifications()).getMessage() === config.WARN_MESSAGES.MISSING_PASSWORD;
+            }
+        }, 'Timeout issue in testing login', testConfig.TIMEOUT);
 
-            atom.commands.dispatch(workspaceElement, 'topcoder:toggle');
-
-            waitsForPromise(() => {
-                return activationPromise;
-            });
-
-            runs(() => {
-                let topcoderElement = workspaceElement.querySelector('.topcoder-workflow');
-                expect(topcoderElement).toBeVisible();
-                atom.commands.dispatch(workspaceElement, 'topcoder:toggle');
-                expect(topcoderElement).not.toBeVisible();
-            });
+        runs(() => {
+            const t = localStorage.getItem("atom_topcoder_token");
+            expect(t).toBe(null);
         });
+    });
 
-        // test login menu(ctrl-shift-t)
-        it('begin to login', () => {
+    // test login menu(ctrl-shift-t)
+    it('begin to login', () => {
+        atom.commands.dispatch(workspaceElement, 'topcoder:login');
 
-            jasmine.attachToDOM(workspaceElement);
+        waitsFor(() => {
+            if (atom.notifications.getNotifications().length > 0) {
+                return _.last(atom.notifications.getNotifications()).getMessage() === config.INFO_MESSAGES.LOGGED_IN;
+            }
+        }, 'Timeout issue in testing login', testConfig.TIMEOUT);
 
-            atom.commands.dispatch(workspaceElement, 'topcoder:login');
-
-            waitsForPromise(() => {
-                return activationPromise;
-            });
-
-            runs(() => {
-                let topcoderElement = workspaceElement.querySelector('.topcoder-workflow');
-                expect(topcoderElement).toBeVisible();
-            });
+        runs(() => {
+            const t = localStorage.getItem("atom_topcoder_token");
+            expect(t).not.toBe(null);
         });
+    });
 
-        // test load menu(ctrl-shift-i)
-        it('begin to load challenges', () => {
+    // test view open challenges menu(ctrl-shift-h)
+    it('begin to view open challenges', () => {
+        atom.commands.dispatch(workspaceElement, 'topcoder:viewOpenChallenges');
 
-            jasmine.attachToDOM(workspaceElement);
+        waitsFor(() => {
+            if (atom.workspace.getActiveTextEditor()) {
+                if (atom.workspace.getActiveTextEditor().getTitle() === 'openChallenges.md') {
+                    return true;
+                }
+            }
+        }, 'Timeout issue in testing view open challenges', testConfig.TIMEOUT);
 
-            atom.commands.dispatch(workspaceElement, 'topcoder:load');
-
-            waitsForPromise(() => {
-                return activationPromise;
-            });
-
-            runs(() => {
-                let topcoderElement = workspaceElement.querySelector('.topcoder-workflow');
-                expect(topcoderElement).toBeVisible();
-            });
+        runs(() => {
+            const filePath = path.join(__dirname, '../temp/openChallenges.md');
+            const data = fs.readFileSync(filePath);
+            const text = data.toString().split('\n');
+            expect(text.length > 2).toBe(true);
         });
+    });
 
+    // test logout menu(ctrl-shift-i)
+    it('begin to logout', () => {
+        atom.commands.dispatch(workspaceElement, 'topcoder:logout');
+
+        waitsFor(() => {
+            if (atom.notifications.getNotifications().length > 0) {
+                return _.last(atom.notifications.getNotifications()).getMessage() === config.INFO_MESSAGES.LOGGED_OUT;
+            }
+        }, 'Timeout issue in testing logout', testConfig.TIMEOUT);
+
+        runs(() => {
+            const t = localStorage.getItem("atom_topcoder_token");
+            expect(t).toBe(null);
+        });
+    });
+
+    // test view open challenges menu(ctrl-shift-h), it will automatically login first
+    it('begin to view open challenges without login', () => {
+        const t = localStorage.getItem("atom_topcoder_token");
+        expect(t).toBe(null);
+
+        atom.commands.dispatch(workspaceElement, 'topcoder:viewOpenChallenges');
+
+        waitsFor(() => {
+            if (atom.workspace.getActiveTextEditor()) {
+                if (atom.workspace.getActiveTextEditor().getTitle() === 'openChallenges.md') {
+                    return true;
+                }
+            }
+        }, 'Timeout issue in testing view open challenges without login', testConfig.TIMEOUT);
+
+        runs(() => {
+            const filePath = path.join(__dirname, '../temp/openChallenges.md');
+            const data = fs.readFileSync(filePath);
+            const text = data.toString().split('\n');
+            expect(text.length > 2).toBe(true);
+            const t = localStorage.getItem("atom_topcoder_token");
+            expect(t).not.toBe(null);
+        });
     });
 });

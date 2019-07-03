@@ -7,15 +7,26 @@
   "keywords": [
     "topcoder"
   ],
+  "scripts": {
+    "test": "atom --test --timeout 30 ./spec/*.js"
+  },
   "dependencies": {
-    "config": "^1.26.2",
-    "jwt-decode": "^2.2.0",
     "lodash": "^4.17.4",
     "request": "^2.83.0",
     "request-promise": "^4.2.2",
-    "topcoder-api-challenges": "^1.0.5",
-    "topcoder-api-projects": "^1.0.1",
     "winston": "^2.4.0"
+  },
+  "configSchema": {
+    "username": {
+      "type": "string",
+      "default": "",
+      "description": "Your Topcoder username."
+    },
+    "password": {
+      "type": "string",
+      "default": "",
+      "description": "Your Topcoder password."
+    }
   },
   "engines": {
     "atom": ">=1.0.0 <2.0.0"
