@@ -8,7 +8,6 @@ const TCAuth = require('../lib/auth/TCAuth');
 const config = require('../config');
 
 describe('Topcoder Api', () => {
-
     it('Should get error message with invalid url to load challenge', () => {
         const invalidUrl = 'https://api.topcoder.com/v4/challenges/?filter=status%3DACTIVExxxx';
         api.get(invalidUrl, null, (res) => {

@@ -6,17 +6,14 @@ This package is meant to closely integrate the Topcoder platform with [Atom](htt
 
 -   Nodejs v10.15
 -   Npm v6.9
--   [Atom markdown-preview](https://atom.io/packages/markdown-preview)
--   [Atom notifications](https://atom.io/packages/notifications)
 
 ## Local Development
 
-1.  Make sure Atom has installed the dependent packages mentioned above.
-2.  Create a folder named `topcoder-workflow` in your `~/.atom/packages` folder
-3.  Copy the source code of this package to the newly created folder. (Alternatively, if you have cloned this repository, you can create a symbolic link.)
-4.  Now, open the newly created folder in atom. If you already had it opened, reload atom
-5.  Ignore any errors about missing modules. Run `npm install` in the folder and then reload to verify that the errors no longer occur
-6.  You should now be able to use the package by opening the command palette and typing `Topcoder` to view the list of avaialble commands
+1.  Create a folder named `topcoder-workflow` in your `~/.atom/packages` folder
+2.  Copy the source code of this package to the newly created folder. (Alternatively, if you have cloned this repository, you can create a symbolic link.)
+3.  Now, open the newly created folder in atom. If you already had it opened, reload atom
+4.  Ignore any errors about missing modules. Run `npm install` in the folder and then reload to verify that the errors no longer occur
+5.  You should now be able to use the package by opening the command palette and typing `Topcoder` to view the list of avaialble commands
 
 ## Package Settings
 

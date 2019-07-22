@@ -8,10 +8,10 @@
     "topcoder"
   ],
   "scripts": {
-    "test": "atom --test --timeout 30 ./spec/*.js"
+    "test": "atom --test --timeout 60 ./spec/*.js"
   },
   "dependencies": {
-    "lodash": "^4.17.4",
+    "lodash": "^4.17.14",
     "request": "^2.83.0",
     "request-promise": "^4.2.2",
     "winston": "^2.4.0"
