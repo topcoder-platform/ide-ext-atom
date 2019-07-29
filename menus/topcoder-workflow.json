@@ -17,6 +17,10 @@
                         {
                             "label": "View Open Challenges",
                             "command": "topcoder:viewOpenChallenges"
+                        },
+                        {
+                            "label": "Upload Submission",
+                            "command": "topcoder:uploadSubmission"
                         }
                     ]
                 }

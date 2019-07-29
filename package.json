@@ -8,11 +8,14 @@
     "topcoder"
   ],
   "scripts": {
-    "test": "atom --test --timeout 60 ./spec/*.js"
+    "test": "atom --test --timeout 60 ./spec/api-spec.js ./spec/utils-spec.js ./spec/topcoder-spec.js"
   },
   "dependencies": {
+    "archiver": "^3.0.3",
+    "glob-gitignore": "^1.0.14",
+    "jsonwebtoken": "^8.5.1",
     "lodash": "^4.17.14",
-    "request": "^2.83.0",
+    "request": "^2.88.0",
     "request-promise": "^4.2.2",
     "winston": "^2.4.0"
   },
@@ -30,5 +33,9 @@
   },
   "engines": {
     "atom": ">=1.0.0 <2.0.0"
+  },
+  "devDependencies": {
+    "mock-fs": "^4.10.1",
+    "nock": "^10.0.6"
   }
 }

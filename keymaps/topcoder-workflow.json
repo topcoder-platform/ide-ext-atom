@@ -1,6 +1,7 @@
 {
     "atom-workspace": {
         "ctrl-shift-h": "topcoder:viewOpenChallenges",
+        "ctrl-shift-x": "topcoder:uploadSubmission",
         "ctrl-shift-t": "topcoder:login",
         "ctrl-shift-i": "topcoder:logout"
     }

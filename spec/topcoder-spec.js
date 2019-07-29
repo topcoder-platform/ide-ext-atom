@@ -3,15 +3,48 @@
 const _ = require('lodash');
 const config = require('../config');
 const testConfig = require('../config/test');
+const { getWorkspacePath } = require('../lib/utils.js');
+const fs = require('fs');
+const nock = require('nock');
+const mock = require('mock-fs');
+const testData = require('./test-data');
+
+const activeChallengesQuery = '?filter=status%3DACTIVE';
 
 describe('TopcoderWorkflow E2E tests', () => {
     let workspaceElement;
 
     beforeEach(() => {
-        workspaceElement = atom.views.getView(atom.workspace);
-        atom.packages.activatePackage('topcoder-workflow');
-        atom.config.set(`${config.EXT_NAME}.username`, testConfig.USERNAME);
-        atom.config.set(`${config.EXT_NAME}.password`, testConfig.PASSWORD);
+      // mock requests/responses
+      nock(/\.com/)
+        .persist()
+        .get(testConfig.TC.CHALLENGES_API_PATH + activeChallengesQuery)
+        .reply(200, testData.validGetChallengesResponse)
+        .get(testConfig.TC.CHALLENGES_API_PATH + '11111') // valid challengeId
+        .reply(200, testData.validGetChallengeResponse)
+        .get(testConfig.TC.CHALLENGES_API_PATH + '12345') // unregistered user
+        .reply(200, testData.unregisteredChallengeResponse)
+        .get(testConfig.TC.CHALLENGES_API_PATH + '123456') // non-existent challenge
+        .reply(404)
+        .get(testConfig.TC.CHALLENGES_API_PATH + '1234567') // submission phase closed
+        .reply(200, testData.closedPhaseChallengeResponse)
+        .post(testConfig.TC.SUBMISSION_API_PATH)
+        .reply(200, { id: 'test_submission_id' })
+        .post(testConfig.TC.AUTHN_PATH, testData.correctLoginRequestBody)
+        .reply(200, { id_token: 'test', refresh_token: 'test' })
+        .post(testConfig.TC.AUTHZ_PATH, testData.validAuthZRequestBody)
+        .reply(200, testData.validAuthZResponse)
+        .post(testConfig.TC.AUTHN_PATH, testData.incorrectLoginRequestBody)
+        .reply(403);
+      workspaceElement = atom.views.getView(atom.workspace);
+      waitsForPromise(() => atom.packages.activatePackage('topcoder-workflow'));
+      atom.config.set(`${config.EXT_NAME}.username`, testConfig.USERNAME);
+      atom.config.set(`${config.EXT_NAME}.password`, testConfig.PASSWORD);
+    });
+
+    afterEach(async () => {
+      nock.cleanAll();
+      mock.restore();
     });
 
     // test login menu(ctrl-shift-t) without username
@@ -188,5 +221,121 @@ describe('TopcoderWorkflow E2E tests', () => {
             expect(atom.workspace.getActivePaneItem().getElement().innerHTML).toContain('<h2>Specification</h2>');
             expect(atom.workspace.getActivePaneItem().getElement().innerHTML).toContain('<h2>Submission Guidelines</h2>');
         });
+    });
+
+    // test upload submission without .topcoderrc
+    it('begin to upload submission without .topcoderrc', () => {
+      atom.commands.dispatch(workspaceElement, 'topcoder:uploadSubmission');
+
+      waitsFor(() => {
+          if (atom.notifications.getNotifications().length > 0) {
+              return _.last(atom.notifications.getNotifications()).getMessage() === config.WARN_MESSAGES.MISSING_TOPCODERRC_FILE;
+          }
+      }, 'Timeout issue in testing upload submission', testConfig.TIMEOUT);
+    });
+
+    // test upload submission with empty .topcoderrc
+    it('begin to upload submission with empty .topcoderrc', () => {
+      // mock-fs uses forward slashes - even on windows
+      const workspacePath = getWorkspacePath().replace(/\\/g, '/');
+      const opts = {};
+      opts[workspacePath + '/.topcoderrc'] = ''; // empty content
+      mock(opts);
+      atom.commands.dispatch(workspaceElement, 'topcoder:uploadSubmission');
+
+      waitsFor(() => {
+          if (atom.notifications.getNotifications().length > 0) {
+              return _.last(atom.notifications.getNotifications()).getMessage() === config.WARN_MESSAGES.INCORRECT_FORMAT_TOPCODERRC;
+          }
+      }, 'Timeout issue in testing upload submission', testConfig.TIMEOUT);
+    });
+
+    // test upload submission without challengeId
+    it('begin to upload submission without challengeId', () => {
+      // mock-fs uses forward slashes - even on windows
+      const workspacePath = getWorkspacePath().replace(/\\/g, '/');
+      const opts = {};
+      opts[workspacePath + '/.topcoderrc'] = JSON.stringify({ challengeId: "" });
+      mock(opts);
+      atom.commands.dispatch(workspaceElement, 'topcoder:uploadSubmission');
+
+      waitsFor(() => {
+          if (atom.notifications.getNotifications().length > 0) {
+              return _.last(atom.notifications.getNotifications()).getMessage() === config.WARN_MESSAGES.MISSING_CHALLENGE_ID;
+          }
+      }, 'Timeout issue in testing upload submission', testConfig.TIMEOUT);
+    });
+
+    // test upload submission with non-existent challengeId
+    it('begin to upload submission with non-existent challengeId', () => {
+      // mock-fs uses forward slashes - even on windows
+      const workspacePath = getWorkspacePath().replace(/\\/g, '/');
+      const opts = {};
+      opts[workspacePath + '/.topcoderrc'] = JSON.stringify({ challengeId: "123456" });
+      mock(opts);
+      atom.commands.dispatch(workspaceElement, 'topcoder:uploadSubmission');
+
+      waitsFor(() => {
+          if (atom.notifications.getNotifications().length > 0) {
+              return _.last(atom.notifications.getNotifications()).getMessage() === config.WARN_MESSAGES.CHALLENGE_NOT_FOUND;
+          }
+      }, 'Timeout issue in testing upload submission', testConfig.TIMEOUT);
+    });
+
+    // test upload submission with unregistered user
+    it('begin to upload submission with unregistered user', () => {
+      // mock-fs uses forward slashes - even on windows
+      const workspacePath = getWorkspacePath().replace(/\\/g, '/');
+      const opts = {};
+      opts[workspacePath + '/.topcoderrc'] = JSON.stringify({ challengeId: "12345" });
+      mock(opts);
+      atom.commands.dispatch(workspaceElement, 'topcoder:uploadSubmission');
+
+      waitsFor(() => {
+          if (atom.notifications.getNotifications().length > 0) {
+              return _.last(atom.notifications.getNotifications()).getMessage() === config.WARN_MESSAGES.NOT_REGISTERED_FOR_CHALLENGE;
+          }
+      }, 'Timeout issue in testing upload submission', testConfig.TIMEOUT);
+    });
+
+    // test upload submission with closed submission phase
+    it('begin to upload submission with closed submission phase', async () => {
+      // mock-fs uses forward slashes - even on windows
+      const workspacePath = getWorkspacePath().replace(/\\/g, '/');
+      const opts = {};
+      opts[workspacePath + '/.topcoderrc'] = JSON.stringify({ challengeId: "1234567" });
+      mock(opts);
+      atom.commands.dispatch(workspaceElement, 'topcoder:uploadSubmission');
+
+      waitsFor(() => {
+          if (atom.notifications.getNotifications().length > 0) {
+              return _.last(atom.notifications.getNotifications()).getMessage() === config.WARN_MESSAGES.SUBMISSION_PHASE_NOT_OPEN;
+          }
+      }, 'Timeout issue in testing upload submission', testConfig.TIMEOUT);
+    });
+
+    // test upload submission with valid workspace
+    it('begin to upload submission with valid workspace', () => {
+      const beforeLength = atom.notifications.getNotifications().length;
+      // mock-fs uses forward slashes - even on windows
+      const workspacePath = getWorkspacePath().replace(/\\/g, '/');
+      const opts = {};
+      opts[workspacePath + '/.topcoderrc'] = JSON.stringify({ challengeId: "11111" });
+      mock(opts);
+      atom.commands.dispatch(workspaceElement, 'topcoder:uploadSubmission');
+
+      waitsFor(() => {
+          if (atom.notifications.getNotifications().length > 0) {
+              return _.last(atom.notifications.getNotifications()).getMessage() === 'Your submission ID: test_submission_id';
+          }
+      }, 'Timeout issue in testing upload submission', testConfig.TIMEOUT);
+      runs(() => {
+          notifications = atom.notifications.getNotifications();
+          expect(notifications.length).toEqual(beforeLength + 6);
+          expect(notifications[notifications.length - 4].getMessage()).toEqual(config.INFO_MESSAGES.ARCHIVING_WORKSPACE);
+          expect(notifications[notifications.length - 3].getMessage()).toEqual(config.INFO_MESSAGES.UPLOADING_SUBMISSION);
+          expect(notifications[notifications.length - 2].getMessage()).toEqual(config.INFO_MESSAGES.UPLOADED_SUBMISSION);
+          expect(_.last(notifications).getMessage()).toEqual('Your submission ID: test_submission_id');
+      });
     });
 });
