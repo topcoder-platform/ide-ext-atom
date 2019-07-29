@@ -6,24 +6,47 @@ const {
 
 const TCAuth = require('../lib/auth/TCAuth');
 const config = require('../config');
+const testConfig = require('../config/test');
+const nock = require('nock');
+const testData = require('./test-data');
+
+const invalidQuery = '?filter=status%3DACTIVExxxx';
+const validQuery = '?filter=status%3DACTIVE';
 
 describe('Topcoder Api', () => {
-    it('Should get error message with invalid url to load challenge', () => {
-        const invalidUrl = 'https://api.topcoder.com/v4/challenges/?filter=status%3DACTIVExxxx';
-        api.get(invalidUrl, null, (res) => {
-            const response = JSON.parse(res.response);
-            const content = response.result.content;
-            expect(typeof content).toBe('string');
-        });
+    beforeEach(() => {
+      nock(/\.com/)
+        .persist()
+        .get(testConfig.TC.CHALLENGES_API_PATH + invalidQuery)
+        .reply(403, testData.invalidURLResponse)
+        .get(testConfig.TC.CHALLENGES_API_PATH + validQuery)
+        .reply(200, testData.validURLResponse)
+        .post(testConfig.TC.AUTHN_PATH, testData.incorrectLoginRequestBody)
+        .reply(403);
     });
 
-    it('Should get challenges array with valid url to load challenge', () => {
-        const validUrl = 'https://api.topcoder.com/v4/challenges/?filter=status%3DACTIVE';
-        api.get(validUrl, null, (res) => {
-            const response = JSON.parse(res.response);
-            const content = response.result.content;
-            expect(typeof content).toBe('object');
-        });
+    afterEach(() => {
+      nock.cleanAll();
+    });
+
+    it('Should get error message with invalid url to load challenge', async () => {
+      try {
+        const url = testConfig.TC.BASE_API_URL + testConfig.TC.CHALLENGES_API_PATH + invalidQuery
+        const response = await api.get(url);
+        throw new Error('Should not throw here');
+      } catch (err) {
+        expect(err.statusCode).toBe(403);
+      }
+    });
+
+    it('Should get challenges array with valid url to load challenge', async () => {
+      try {
+        const url = testConfig.TC.BASE_API_URL + testConfig.TC.CHALLENGES_API_PATH + validQuery
+        const response = await api.get(url);
+        expect(typeof response).toBe('object');
+      } catch (err) {
+        throw new Error('Should not throw here');
+      }
     });
 
     it('Should get error with invalid credentials to login', () => {
