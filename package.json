@@ -8,6 +8,7 @@
     "topcoder"
   ],
   "scripts": {
+    "lint": "standard",
     "test": "atom --test --timeout 60 ./spec/api-spec.js ./spec/utils-spec.js ./spec/topcoder-spec.js"
   },
   "dependencies": {
@@ -36,6 +37,17 @@
   },
   "devDependencies": {
     "mock-fs": "^4.10.1",
-    "nock": "^10.0.6"
+    "nock": "^10.0.6",
+    "standard": "^12.0.1"
+  },
+  "standard": {
+    "env": [
+      "jasmine"
+    ],
+    "globals": [
+      "atom",
+      "localStorage",
+      "waitsForPromise"
+    ]
   }
 }

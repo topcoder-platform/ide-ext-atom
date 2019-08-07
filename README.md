@@ -14,13 +14,14 @@ This package is meant to closely integrate the Topcoder platform with [Atom](htt
 3.  Now, open the newly created folder in atom with Development mode. If you already had it opened, reload atom
 4.  Ignore any errors about missing modules. Run `npm install` in the folder and then reload to verify that the errors no longer occur
 5.  You should now be able to use the package by opening the command palette and typing `Topcoder` to view the list of avaialble commands
+6.  The field "useDevEndpoints" in "config/index.js" can be used to switch between topcoder develop endpoint or production endpoint.
 
 ## Development Mode
 
-You can run the Atom with Dev mode by
+You can run the package in dev mode by
 
-1. going to the `View -> Developer -> Open In Dev Mode...`,
-2. or, running `atom -d .` in the package directory
+1.  going to the `View -> Developer -> Open In Dev Mode...`,
+2.  or, running `atom -d .` in the package directory
 
 ## Package Settings
 
@@ -67,14 +68,18 @@ Press "shift-cmd/ctrl-p" to show Command Palette
 
 -   "Topcoder: Login": to login in Topcoder using your username and password.
 -   "Topcoder: Logout": to logout, clear the token of current user.
--   "Topcoder: View Open Challenges": Show open challenges in Mark Down format
+-   "Topcoder: View Open Challenges": Show open challenges in in HTML format. Clicking on a link of the challenge will open a new tab containing details of the challenge(If user hasn't registered such challenge, it will contain a registration button).
 -   "Topcoder: Upload Submission": Uploads the open workspace as challenge submission. You need to specify the `challengeId` in `.topcoderrc` file. (refer to the [configuration](#configuration))
+
+## Run lint
+
+Run `npm run lint` to find lint errors.
 
 ## Run unit tests
 
-1. Run `npm install` in `topcoder-workflow` folder.
-2. Configure `config/test.js`, if you need. (you should be good to go with existing config)
-3. You have 3 alternatives to run tests, choose one below.
-   1. Run `apm test` in `topcoder-workflow` folder.
-   2. Run `npm test` in `topcoder-workflow` folder.
-   3. Run `View -> Developer -> Run Package Specs`, within Atom window.
+1.  Run `npm install` in `topcoder-workflow` folder.
+2.  Configure `config/test.js`, if you need. (you should be good to go with existing config)
+3.  You have 3 alternatives to run tests, choose one below.
+    -   Run `apm test` in `topcoder-workflow` folder.
+    -   Run `npm test` in `topcoder-workflow` folder.
+    -   Run `View -> Developer -> Run Package Specs`, within Atom window.
