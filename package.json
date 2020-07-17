@@ -15,7 +15,7 @@
     "archiver": "^3.0.3",
     "glob-gitignore": "^1.0.14",
     "jsonwebtoken": "^8.5.1",
-    "lodash": "^4.17.14",
+    "lodash": "^4.17.19",
     "request": "^2.88.0",
     "request-promise": "^4.2.2",
     "winston": "^2.4.0"
