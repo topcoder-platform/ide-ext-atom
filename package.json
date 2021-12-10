@@ -18,7 +18,7 @@
     "lodash": "^4.17.14",
     "request": "^2.88.0",
     "request-promise": "^4.2.2",
-    "winston": "^2.4.0"
+    "winston": "^2.4.5"
   },
   "configSchema": {
     "username": {
