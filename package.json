@@ -14,7 +14,7 @@
   "dependencies": {
     "archiver": "^3.0.3",
     "glob-gitignore": "^1.0.14",
-    "jsonwebtoken": "^8.5.1",
+    "jsonwebtoken": "^9.0.0",
     "lodash": "^4.17.14",
     "request": "^2.88.0",
     "request-promise": "^4.2.2",
